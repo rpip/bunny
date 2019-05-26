@@ -9,9 +9,7 @@ defmodule Bunny.Graph do
   Translates the keyword tree structure to vertices and edges,
   and then topologically sorts the nodes/vertices and edges.
   """
-  @spec topsort(t) ::
-          {:ok, [Bunny.task()]}
-          | {:error, {:cyclic, [Bunny.task()]}}
+  @spec topsort(t) :: {:ok, [Bunny.task()]} | {:error, {:cyclic, [Bunny.task()]}}
   def topsort(graph) do
     g = :digraph.new()
 
@@ -21,7 +19,7 @@ defmodule Bunny.Graph do
     end)
 
     if sorted = :digraph_utils.topsort(g) do
-      {:ok, sorted}
+      {:ok, Enum.reverse(sorted)}
     else
       circular_deps =
         :digraph.vertices(g)

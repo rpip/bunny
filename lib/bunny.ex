@@ -1,19 +1,12 @@
 defmodule Bunny do
   @moduledoc """
   """
-  alias Bunny.{Graph, InvalidTaskError}
+  alias Bunny.{Graph, Formatter, InvalidTaskError}
 
   @type task :: String.t()
   @type dep :: task
   @type dead_path :: [{task, [dep]}]
   @type job :: [map]
-
-  def parse_file!(fpath) do
-    File.read!(fpath)
-    |> Jason.decode!()
-    |> Map.get("tasks")
-    |> sort
-  end
 
   @doc """
   Sorts the tasks to create a proper execution order.
@@ -25,7 +18,7 @@ defmodule Bunny do
   """
   @spec sort(job) ::
           {:ok, map}
-          | {:error, {:dead_paths, [dead_path]}}
+          | {:error, {:dead_path, [dead_path]}}
           | {:error, {:cyclic, [[task]]}}
   def sort(job) do
     with {:ok, graph} <- build_graph!(job) do
@@ -34,6 +27,18 @@ defmodule Bunny do
         sorted_tasks = Enum.map(top_sorted, fn task -> job2[task] end)
         {:ok, sorted_tasks}
       end
+    end
+  end
+
+  def sort(job, :json) do
+    with {:ok, sorted_tasks} <- sort(job) do
+      {:ok, Formatter.pretty_print(sorted_tasks, :json)}
+    end
+  end
+
+  def sort(job, :bash) do
+    with {:ok, sorted_tasks} <- sort(job) do
+      {:ok, Formatter.pretty_print(sorted_tasks, :bash)}
     end
   end
 
@@ -50,7 +55,7 @@ defmodule Bunny do
 
     case check_dead_paths(graph) do
       [] -> {:ok, graph}
-      dead_paths -> {:error, {:dead_paths, dead_paths}}
+      dead_paths -> {:error, {:dead_path, dead_paths}}
     end
   end
 
