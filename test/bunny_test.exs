@@ -91,6 +91,6 @@ defmodule BunnyTest do
     cat /tmp/file1\nrm /tmp/file1
     """
 
-    assert {:ok, String.trim(expected)} == Bunny.sort(tasks, :bash)
+    assert {:ok, String.trim(expected)} == Bunny.sort(tasks, :shell)
   end
 end

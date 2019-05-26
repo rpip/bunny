@@ -9,7 +9,7 @@ defmodule Bunny.Formatter do
     Enum.map(tasks, fn task -> Map.delete(task, "requires") end)
   end
 
-  def pretty_print(tasks, :bash) do
+  def pretty_print(tasks, :shell) do
     commands =
       tasks
       |> Enum.map(&Map.get(&1, "command"))

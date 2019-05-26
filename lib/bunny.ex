@@ -30,15 +30,18 @@ defmodule Bunny do
     end
   end
 
+  @doc """
+  Sorts the tasks and pretty prints the results in the given format
+  """
   def sort(job, :json) do
     with {:ok, sorted_tasks} <- sort(job) do
       {:ok, Formatter.pretty_print(sorted_tasks, :json)}
     end
   end
 
-  def sort(job, :bash) do
+  def sort(job, :shell) do
     with {:ok, sorted_tasks} <- sort(job) do
-      {:ok, Formatter.pretty_print(sorted_tasks, :bash)}
+      {:ok, Formatter.pretty_print(sorted_tasks, :shell)}
     end
   end
 
