@@ -1,12 +1,12 @@
 defmodule Bunny do
   @moduledoc """
   """
-  alias Bunny.{Graph, Formatter, InvalidTaskError}
+  alias Bunny.{Graph, InvalidTaskError}
+  alias Bunny.Serializers.{JSON, Shell}
 
   @type task :: String.t()
   @type dep :: task
   @type dead_path :: [{task, [dep]}]
-  @type job :: [map]
 
   @doc """
   Sorts the tasks to create a proper execution order.
@@ -16,7 +16,7 @@ defmodule Bunny do
 
   Raises a Bunny.InvalidTaskError if task schema is invalid.
   """
-  @spec sort(job) ::
+  @spec sort([map]) ::
           {:ok, map}
           | {:error, {:dead_path, [dead_path]}}
           | {:error, {:cyclic, [[task]]}}
@@ -31,34 +31,48 @@ defmodule Bunny do
   end
 
   @doc """
-  Sorts the tasks and pretty prints the results in the given format
+  Sorts the tasks and serializes the results in the given format.
+
+  Supported formats are JSON and Shell
   """
   def sort(job, :json) do
     with {:ok, sorted_tasks} <- sort(job) do
-      {:ok, Formatter.pretty_print(sorted_tasks, :json)}
+      JSON.serialize(sorted_tasks)
     end
   end
 
   def sort(job, :shell) do
     with {:ok, sorted_tasks} <- sort(job) do
-      {:ok, Formatter.pretty_print(sorted_tasks, :shell)}
+      Shell.serialize(sorted_tasks)
     end
   end
 
   ## private
 
-  ## Returns a simple tree strcuture mapping tasks to dependencies.
-  defp build_graph!(tasks) do
-    graph =
+  ## Returns a simple tree structure mapping tasks to dependencies.
+  def build_graph!(tasks) do
+    name_deps =
       Enum.map(tasks, fn task ->
         validate_schema!(task)
 
         {task["name"], Map.get(task, "requires", [])}
       end)
 
-    case check_dead_paths(graph) do
-      [] -> {:ok, graph}
-      dead_paths -> {:error, {:dead_path, dead_paths}}
+    case check_dead_paths(name_deps) do
+      [] ->
+        graph =
+          Enum.reduce(
+            name_deps,
+            Graph.new() |> Graph.add_vertices(Keyword.keys(name_deps)),
+            fn {task, deps}, g ->
+              Graph.add_edges(g, task, deps)
+            end
+          )
+
+        {:ok, graph}
+
+      dead_paths ->
+        {:error, {:dead_path, dead_paths}}
     end
   end
 
@@ -67,6 +81,7 @@ defmodule Bunny do
     unless valid, do: raise(InvalidTaskError, task: task)
   end
 
+  # checks for missing/dead requirements
   defp check_dead_paths(graph) do
     nodes = Keyword.keys(graph)
 

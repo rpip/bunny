@@ -1,7 +1,6 @@
 defmodule BunnyWeb.Router do
   use BunnyWeb, :router
 
-
   pipeline :api do
     plug :accepts, ["json"]
   end

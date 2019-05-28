@@ -1,27 +1,31 @@
 defmodule BunnyTest do
   use ExUnit.Case
 
-  defp parse_file!(fpath) do
-    File.read!(fpath)
+  doctest Bunny.Graph
+
+  defp parse_file!(filename) do
+    Path.join("test/fixtures", filename)
+    |> File.read!()
     |> Jason.decode!()
     |> Map.get("tasks")
   end
 
   test "cyclic tasks" do
-    tasks = parse_file!("test/fixtures/cyclic_tasks.json")
+    tasks = parse_file!("cyclic_tasks.json")
 
     cyclic_tasks = [
-      ["task-3", "task-4", "task-3"],
-      ["task-5", "task-5"],
-      ["task-2", "task-3", "task-4", "task-2"],
-      ["task-4", "task-3", "task-4"]
+      {"task-1", []},
+      {"task-2", ["task-3"]},
+      {"task-3", ["task-4"]},
+      {"task-4", ["task-2", "task-3"]},
+      {"task-5", ["task-5"]}
     ]
 
     assert {:error, {:cyclic, cyclic_tasks}} == Bunny.sort(tasks)
   end
 
   test "invalid task schema" do
-    tasks = parse_file!("test/fixtures/missing_command_name.json")
+    tasks = parse_file!("missing_command_name.json")
 
     assert_raise(Bunny.InvalidTaskError, fn ->
       Bunny.sort(tasks)
@@ -29,7 +33,7 @@ defmodule BunnyTest do
   end
 
   test "missing task dependency" do
-    tasks = parse_file!("test/fixtures/missing_task.json")
+    tasks = parse_file!("missing_task.json")
 
     missing_deps = ["task-3"]
     expected = {:error, {:dead_path, [{"task-2", missing_deps}, {"task-4", missing_deps}]}}
@@ -38,7 +42,7 @@ defmodule BunnyTest do
   end
 
   test "one task valid" do
-    tasks = parse_file!("test/fixtures/one_valid.json")
+    tasks = parse_file!("one_valid.json")
     sorted_tasks = [%{"command" => "touch /tmp/file1", "name" => "task-1"}]
 
     assert {:ok, sorted_tasks} == Bunny.sort(tasks)
@@ -64,12 +68,12 @@ defmodule BunnyTest do
       }
     ]
 
-    tasks = parse_file!("test/fixtures/many_valid.json")
+    tasks = parse_file!("many_valid.json")
     assert {:ok, sorted_tasks} == Bunny.sort(tasks)
   end
 
   test "pretty print json" do
-    tasks = parse_file!("test/fixtures/many_valid.json")
+    tasks = parse_file!("many_valid.json")
 
     expected = [
       %{"command" => "touch /tmp/file1", "name" => "task-1"},
@@ -82,7 +86,7 @@ defmodule BunnyTest do
   end
 
   test "pretty print bash" do
-    tasks = parse_file!("test/fixtures/many_valid.json")
+    tasks = parse_file!("many_valid.json")
 
     expected = """
     #!/usr/bin/env bash
