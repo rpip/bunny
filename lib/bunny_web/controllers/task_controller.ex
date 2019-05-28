@@ -3,8 +3,13 @@ defmodule BunnyWeb.TaskController do
 
   def sort(conn, %{"tasks" => tasks} = _params) do
     case Bunny.sort(tasks, :json) do
-      {:ok, sorted_tasks} -> json(conn, sorted_tasks)
-      {:error, reason} -> conn |> put_status(400) |> json(%{"error" => reason})
+      {:ok, sorted_tasks} ->
+        json(conn, sorted_tasks)
+
+      {:error, reason} ->
+        conn
+        |> put_status(400)
+        |> json(format_error(reason))
     end
   end
 
@@ -17,8 +22,13 @@ defmodule BunnyWeb.TaskController do
 
   def shell(conn, %{"tasks" => tasks} = _params) do
     case Bunny.sort(tasks, :shell) do
-      {:ok, sorted_tasks} -> text(conn, sorted_tasks)
-      {:error, reason} -> conn |> put_status(400) |> json(%{"error" => reason})
+      {:ok, sorted_tasks} ->
+        text(conn, sorted_tasks)
+
+      {:error, reason} ->
+        conn
+        |> put_status(400)
+        |> json(format_error(reason))
     end
   end
 
@@ -31,5 +41,13 @@ defmodule BunnyWeb.TaskController do
 
   defp decode_stream!(params) do
     Map.keys(params) |> Enum.at(0) |> Jason.decode!()
+  end
+
+  defp format_error({:cyclic, cyclic_tasks}) do
+    %{
+      type: :invalid_request_error,
+      message: "circular depedencies found",
+      details: Map.new(cyclic_tasks)
+    }
   end
 end
