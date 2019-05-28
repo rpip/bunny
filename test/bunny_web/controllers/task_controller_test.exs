@@ -1,9 +1,6 @@
 defmodule BunnyWeb.TaskControllerTest do
   use BunnyWeb.ConnCase
 
-  # test bash script serialization
-  # test 400 error circular deps
-  # test JSON sorting
   defp parse_file!(filename) do
     Path.join("test/fixtures", filename)
     |> File.read!()

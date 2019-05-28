@@ -211,10 +211,7 @@ defmodule Bunny.Graph do
 
         true ->
           :ets.delete(path, vertex)
-          # use time value for ordering values
-          # ordered set doesn't work for this
-          # in ordered set: first element is the smallest one, and the last element is the largest one
-          # we need sorted list to be ordered by order of visiting the nodes
+          # sorted is an ets ordered_set. use time value for ordering values
           :ets.insert(sorted, {Time.utc_now(), vertex})
           false
       end

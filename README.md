@@ -2,7 +2,9 @@
 
 HTTP job processing service.
 
-Sorts the tasks to create a proper execution order.
+A job is a collection of tasks, where each task has a name and a shell command.
+Tasks may depend on other tasks and require that those are executed beforehand.
+The service takes care of sorting the tasks to create a proper execution order.
 
 # How it works
 
@@ -55,7 +57,6 @@ touch /tmp/file1
 echo 'Hello World!' > /tmp/file1
 cat /tmp/file1
 rm /tmp/file1
-[master][yao@moonboots:~/dev/bunny]
 ```
 
 ## Deployment
