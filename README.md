@@ -2,13 +2,24 @@
 
 HTTP job processing service.
 
-Sorts the tasks to create a proper execution order
+Sorts the tasks to create a proper execution order.
 
 # How it works
 
 Topologically sorts the nodes, and detects cycles using depth-first-search algorithm.
 
-See Bunny.Graph.topsort/1
+The core is in lib/bunny, separate from the web interface.
+
+Error messages are meaningful and precise to catch and report many edges cases:
+
+  - self reference tasks/nodes
+  - cycles / loop in tasks: e.g: A -> B -> A -> B, A -> B -> C -> B
+  - missing / dead references
+    - detect all cycles and include them in the error message.
+
+Uses ETS tables to collect found cycles and track the state of the search.
+
+See [Bunny.Graph](./lib/bunny/graph.ex)
 
 ## Examples
 
