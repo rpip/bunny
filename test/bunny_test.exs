@@ -14,7 +14,6 @@ defmodule BunnyTest do
     tasks = parse_file!("cyclic_tasks.json")
 
     cyclic_tasks = [
-      {"task-1", []},
       {"task-2", ["task-3"]},
       {"task-3", ["task-4"]},
       {"task-4", ["task-2", "task-3"]},

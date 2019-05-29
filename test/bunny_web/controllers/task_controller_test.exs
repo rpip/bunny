@@ -50,7 +50,6 @@ defmodule BunnyWeb.TaskControllerTest do
       "type" => "invalid_request_error",
       "message" => "circular depedencies found",
       "details" => %{
-        "task-1" => [],
         "task-2" => [
           "task-3"
         ],

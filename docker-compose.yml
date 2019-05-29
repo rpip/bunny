@@ -10,6 +10,8 @@ services:
     build:
       # Here we define that it should build from the current directory
       context: .
+    environment:
+      SECRET_KEY_BASE: r4uGTLl7tOMDGVNOBCIrd5U0iyr6+3UiasbIiSnuaDlvJa+P6SARk2+NhyU4pEnl
     ports:
       # Mapping the port to make the Phoenix app accessible outside of the container
       - "4000:4000"

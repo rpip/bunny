@@ -59,6 +59,31 @@ cat /tmp/file1
 rm /tmp/file1
 ```
 
+### Detects a cyclic errors
+
+``` shell
+$ curl -d @test/fixtures/cyclic_tasks.json http://localhost:4000
+{
+    "message": "circular depedencies found",
+    "type": "invalid_request_error",
+    "details": {
+        "task-2": [
+            "task-3"
+        ],
+        "task-3": [
+            "task-4"
+        ],
+        "task-4": [
+            "task-2",
+            "task-3"
+        ],
+        "task-5": [
+            "task-5"
+        ]
+    }
+}
+```
+
 ## How to run
 
 ### Run with docker
@@ -69,18 +94,26 @@ $ docker-compose up
 
 You can also directly build the image and run the container
 
-### Release
+### Generate and run production release
+
+Use `./run.sh` to build the production release. Starts in console mode
 
 ``` shell
-$ mix release
-λ _build/dev/rel/bunny/bin/bunny console
+$ ./run.sh
+==> Getting deps
+...
+==> Generating release
+...
+==> Starting server
 Erlang/OTP 20 [erts-9.1.2] [source] [64-bit] [smp:4:4] [ds:4:4:10] [async-threads:10] [hipe] [kernel-poll:false] [dtrace]
 
+01:05:27.789 [info] Running BunnyWeb.Endpoint with cowboy 2.6.3 at :::4000 (http)
+01:05:27.790 [info] Access BunnyWeb.Endpoint at http://localhost:4000
 Interactive Elixir (1.8.0) - press Ctrl+C to exit (type h() ENTER for help)
 iex(bunny@127.0.0.1)>
 ```
 
-### Deploy locally
+### setup locally
 
 To start your Phoenix server:
 

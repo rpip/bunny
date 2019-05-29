@@ -181,7 +181,9 @@ defmodule Bunny.Graph do
 
     # for each node, recursively visit the node and mark circular deps and non circular deps
     dfs_nodes = Enum.map(vertices(g), &visit(g, &1, cycles, sorted, path, visited))
-    {Enum.any?(dfs_nodes), :ets.tab2list(sorted) |> Keyword.values(), :ets.tab2list(cycles)}
+    found_cycles = :ets.tab2list(cycles) |> Enum.reject(fn {k, v} -> v == [] end)
+    topsorted_nodes = :ets.tab2list(sorted) |> Keyword.values()
+    {Enum.any?(dfs_nodes), topsorted_nodes, found_cycles}
   end
 
   # returns true if the node (vertex) in graph(g) has a cycle.
