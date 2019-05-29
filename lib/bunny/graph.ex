@@ -193,19 +193,7 @@ defmodule Bunny.Graph do
       :ets.insert(path, {vertex})
 
       visit_recur(g, vertex, cycles, sorted, path, visited)
-
-      [{_, found_cycles}] = :ets.lookup(cycles, vertex)
-
-      cond do
-        found_cycles != [] ->
-          true
-
-        true ->
-          :ets.delete(path, vertex)
-          # sorted is an ets ordered_set. use time value for ordering values
-          :ets.insert(sorted, {Time.utc_now(), vertex})
-          false
-      end
+      post_vist_checks(vertex, cycles, sorted, path)
     end
   end
 
@@ -221,6 +209,21 @@ defmodule Bunny.Graph do
         true ->
           :noop
       end
+    end
+  end
+
+  defp post_vist_checks(vertex, cycles, sorted, path) do
+    [{_, found_cycles}] = :ets.lookup(cycles, vertex)
+
+    cond do
+      found_cycles != [] ->
+        true
+
+      true ->
+        :ets.delete(path, vertex)
+        # sorted is an ets ordered_set. use time value for ordering values
+        :ets.insert(sorted, {Time.utc_now(), vertex})
+        false
     end
   end
 
