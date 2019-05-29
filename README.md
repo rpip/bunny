@@ -59,7 +59,7 @@ cat /tmp/file1
 rm /tmp/file1
 ```
 
-## Deployment
+## How to run
 
 ### Run with docker
 
@@ -68,6 +68,17 @@ $ docker-compose up
 ```
 
 You can also directly build the image and run the container
+
+### Release
+
+``` shell
+$ mix release
+λ _build/dev/rel/bunny/bin/bunny console
+Erlang/OTP 20 [erts-9.1.2] [source] [64-bit] [smp:4:4] [ds:4:4:10] [async-threads:10] [hipe] [kernel-poll:false] [dtrace]
+
+Interactive Elixir (1.8.0) - press Ctrl+C to exit (type h() ENTER for help)
+iex(bunny@127.0.0.1)>
+```
 
 ### Deploy locally
 
