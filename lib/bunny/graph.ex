@@ -181,7 +181,7 @@ defmodule Bunny.Graph do
 
     # for each node, recursively visit the node and mark circular deps and non circular deps
     dfs_nodes = Enum.map(vertices(g), &visit(g, &1, cycles, sorted, path, visited))
-    found_cycles = :ets.tab2list(cycles) |> Enum.reject(fn {k, v} -> v == [] end)
+    found_cycles = :ets.tab2list(cycles) |> Enum.reject(fn {_k, v} -> v == [] end)
     topsorted_nodes = :ets.tab2list(sorted) |> Keyword.values()
     {Enum.any?(dfs_nodes), topsorted_nodes, found_cycles}
   end
@@ -192,18 +192,7 @@ defmodule Bunny.Graph do
       :ets.insert(visited, {vertex})
       :ets.insert(path, {vertex})
 
-      for neighbour <- edges(g, vertex) do
-        cond do
-          :ets.member(path, neighbour) ->
-            update_cycles(cycles, vertex, neighbour)
-
-          visit(g, neighbour, cycles, sorted, path, visited) ->
-            update_cycles(cycles, vertex, neighbour)
-
-          true ->
-            :noop
-        end
-      end
+      visit_recur(g, vertex, cycles, sorted, path, visited)
 
       [{_, found_cycles}] = :ets.lookup(cycles, vertex)
 
@@ -216,6 +205,21 @@ defmodule Bunny.Graph do
           # sorted is an ets ordered_set. use time value for ordering values
           :ets.insert(sorted, {Time.utc_now(), vertex})
           false
+      end
+    end
+  end
+
+  defp visit_recur(g, vertex, cycles, sorted, path, visited) do
+    for neighbour <- edges(g, vertex) do
+      cond do
+        :ets.member(path, neighbour) ->
+          update_cycles(cycles, vertex, neighbour)
+
+        visit(g, neighbour, cycles, sorted, path, visited) ->
+          update_cycles(cycles, vertex, neighbour)
+
+        true ->
+          :noop
       end
     end
   end
